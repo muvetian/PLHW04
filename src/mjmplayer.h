@@ -10,6 +10,7 @@
 #include "player.h"
 #include "shedgame.h"
 class MJMPlayer: public Player{
+public:
 	MJMPlayer(ShedGame&, const string&);
     void reset();              // Issued just before dealing.
     void prepare();            // Issued just before game starts, after dealing.
@@ -19,6 +20,8 @@ class MJMPlayer: public Player{
     Card playCard();           // What card do you want to play?
     void inform(int p, int s, int t); // Player with id p is in stage s and has t cards.
     void disqualified(int p);  // Player with id p has been disqualified.
+private:
+    bool isQualified;
 };
 
 
