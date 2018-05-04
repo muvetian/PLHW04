@@ -9,6 +9,7 @@
 #include <string>
 #include "player.h"
 #include "mjmplayer.h"
+#include "niceplayer.h"
 #include "crazy8.h"
 #include "switch.h"
 #include "blackjack.h"
@@ -58,6 +59,9 @@ void play(ShedGame& g, int M, int N) {
                 // A player that I wrote (code not available!).
                 g.addPlayer(new MJMPlayer(g, name));
                 break;
+            case 2:
+            	g.addPlayer(new NicePlayer(g, name));
+            	break;
             default:
                 throw logic_error("Error: invalid choice received");
                 break;
@@ -164,11 +168,12 @@ int getNumIterations() {
  */
 int getPlayer(int k) {
     int ans;
-    const int Choices = 1;
+    const int Choices = 2;
     cout << "\nChoose player " << k << ":\n";
     do {
         cout << " 1. Dr. M!\n"
-             << "Enter choice: ";
+             << " 2. NicePlayer\n"
+			<< "Enter choice: ";
         cin >> ans;
         if (ans <= 0 || ans > Choices) cout << "Invalid choice, try again.\n";
     } while (ans <= 0 || ans > Choices);

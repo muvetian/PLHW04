@@ -1,17 +1,17 @@
 /*
- * mjmplayer.h
+ * NicePlayer.h
  *
  *  Created on: Apr 16, 2018
  *      Author: mutian
  */
 
-#ifndef MJMPLAYER_H_
-#define MJMPLAYER_H_
+#ifndef NicePlayer_H_
+#define NicePlayer_H_
 #include "player.h"
 #include "shedgame.h"
-class MJMPlayer: public Player{
+class NicePlayer: public Player{
 public:
-	MJMPlayer(ShedGame&, const string&);
+	NicePlayer(ShedGame&, const string&);
     void reset();              // Issued just before dealing.
     void prepare();            // Issued just before game starts, after dealing.
     ShedGame::Option ask();    // What do you want to do?
@@ -28,4 +28,4 @@ private:
 };
 
 
-#endif /* MJMPLAYER_H_ */
+#endif /* NicePlayer_H_ */
