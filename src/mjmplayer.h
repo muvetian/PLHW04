@@ -24,7 +24,12 @@ public:
 private:
     bool isQualified;
     vector<int> playerStages;
+    bool ifPlayed;
+    int myStage;
+    int cardsToDraw;
     int cardToPlay;
+    bool fillingContract;
+    bool burning;
 };
 
 
