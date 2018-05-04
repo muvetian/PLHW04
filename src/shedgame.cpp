@@ -13,32 +13,32 @@
 using namespace std;
 
 ShedGame::~ShedGame() {
-    for (int i=0; i<player.size(); i++) delete player[i];
+	for (int i=0; i<player.size(); i++) delete player[i];
 }
 
 /*
  * Simple accessors.
  */
 Card::Suit ShedGame::getCurSuit() const {
-    return curSuit;
+	return curSuit;
 }
 
 Card::Rank ShedGame::getCurRank() const {
-    return discard.top().getRank();
+	return discard.top().getRank();
 }
 
 int ShedGame::getContract() const {
-    return contract;
+	return contract;
 }
 
 /*
  * Add a player to the game.
  */
 void ShedGame::addPlayer(Player* p) {
-    player.push_back(p);
-    net.push_back(0);
-    played.push_back(0);
-    stage.push_back(0);
+	player.push_back(p);
+	net.push_back(0);
+	played.push_back(0);
+	stage.push_back(0);
 }
 
 /*
@@ -46,35 +46,35 @@ void ShedGame::addPlayer(Player* p) {
  * to receive the initial cards, and deal the initial hands.
  */
 void ShedGame::reset() {
-    // Automatically sets number of decks based on number of players.
-    int numdecks = 1 + player.size()/3;
-    stock.clear();
-    while (!discard.empty()) discard.pop();
-    for (int i=0; i<numdecks; i++) {
-        for (int r=0; r<Card::numRanks; r++) {
-            for (int s=0; s<Card::numSuits; s++) {
-                stock.push_back(Card(Card::ranks[r], Card::suits[s]));
-            }
-        }
-    }
-    random_shuffle(stock.begin(), stock.end());  // This is in <algorithm>
+	// Automatically sets number of decks based on number of players.
+	int numdecks = 1 + player.size()/3;
+	stock.clear();
+	while (!discard.empty()) discard.pop();
+	for (int i=0; i<numdecks; i++) {
+		for (int r=0; r<Card::numRanks; r++) {
+			for (int s=0; s<Card::numSuits; s++) {
+				stock.push_back(Card(Card::ranks[r], Card::suits[s]));
+			}
+		}
+	}
+	random_shuffle(stock.begin(), stock.end());  // This is in <algorithm>
 
-    #ifdef debug
-        for (int i=0; i<stock.size(); i++) cout << " " << stock[i];
-        cout << endl;
-    #endif
+#ifdef debug
+	for (int i=0; i<stock.size(); i++) cout << " " << stock[i];
+	cout << endl;
+#endif
 
-    for (int i=0; i<player.size(); i++) {
-        player[i]->reset();
-        stage[i] = net[i] = handSize();
-        played[i] = 0;
-    }
-    for (int i=0; i<handSize(); i++) {
-        for (int j=0; j<player.size(); j++) {
-            player[j]->take(stock.back());  // Off back for efficiency.
-            stock.pop_back();
-        }
-    }
+	for (int i=0; i<player.size(); i++) {
+		player[i]->reset();
+		stage[i] = net[i] = handSize();
+		played[i] = 0;
+	}
+	for (int i=0; i<handSize(); i++) {
+		for (int j=0; j<player.size(); j++) {
+			player[j]->take(stock.back());  // Off back for efficiency.
+			stock.pop_back();
+		}
+	}
 }
 
 /*
@@ -83,227 +83,232 @@ void ShedGame::reset() {
  * Returns the index of the winning player.
  */
 int ShedGame::play() {
-    // Initialize the discard pile.
-    discard.push(stock.back());
-    stock.pop_back();
-    // Shuffle the order of the players.
-    random_shuffle(player.begin(), player.end());
-    cur = 0;     // First player
-    curId = player[cur]->getId();
-    incr = 1;    // Initial step
-    #ifndef quiet
-        cout << "Player order for this game: " << player[0]->getName();
-        for (int i=1; i<numPlayers(); i++) cout << "->" << player[i]->getName();
-        cout << "\nStarting player: " << player[cur]->getId() << " ("
-             << player[cur]->getName() << "), "
-             << ((incr == 1) ? "ascending" : "descending") << " order.\n"
-             << "Opening card: " << discard.top() << endl;
-    #endif
-    // Set initial flags based on top discard.
-    nextContract = 0;
-    burning = false;
-    if (isReverser(discard.top())) incr = -incr;
-    if (isSkipper(discard.top())) nextPlayer();
-    if (isDrawTwo(discard.top())) nextContract = 2;
-    if (isDrawFive(discard.top())) nextContract = 5;
-    curSuit = discard.top().getSuit();
-    // Tell each player to get ready to play.
-    for (int i=0; i<player.size(); i++) player[i]->prepare();
-    Option opt = GetCard;
-    Card c;
-    int winner;
+	// Initialize the discard pile.
+	discard.push(stock.back());
+	stock.pop_back();
+	// Shuffle the order of the players.
+	random_shuffle(player.begin(), player.end());
+	cur = 0;     // First player
+	curId = player[cur]->getId();
+	incr = 1;    // Initial step
+#ifndef quiet
+	cout << "Player order for this game: " << player[0]->getName();
+	for (int i=1; i<numPlayers(); i++) cout << "->" << player[i]->getName();
+	cout << "\nStarting player: " << player[cur]->getId() << " ("
+			<< player[cur]->getName() << "), "
+			<< ((incr == 1) ? "ascending" : "descending") << " order.\n"
+			<< "Opening card: " << discard.top() << endl;
+#endif
+	// Set initial flags based on top discard.
+	nextContract = 0;
+	burning = false;
+	if (isReverser(discard.top())) incr = -incr;
+	if (isSkipper(discard.top())) nextPlayer();
+	if (isDrawTwo(discard.top())) nextContract = 2;
+	if (isDrawFive(discard.top())) nextContract = 5;
+	curSuit = discard.top().getSuit();
+	// Tell each player to get ready to play.
+	for (int i=0; i<player.size(); i++) player[i]->prepare();
+	Option opt = GetCard;
+	Card c;
+	int winner;
 
-    // Principal loop: Keep playing until somebody wins.
-    while (opt != Win) {
-        contract = nextContract;
-        nextContract = 0;
-        personalContract = 0;
-        bool playedCard = false;
-        bool fillingContract = false;
-        bool pickedWild = false;
-        bool finishedDrawing = false;
-        opt = GetCard;
-        // Inner loop: handle a player's turn.
-        while (opt != Done && opt != Win) {
-            #ifdef debug
-                cout << "Player " << player[cur]->getId() << ": ";
-                player[cur]->printHand();
-                cout << endl;
-                cout << " top card is " << discard.top() << endl;
-            #endif
-            opt = player[cur]->ask();
-            #ifdef debug
-                cout << " selected " << opt << endl;
-            #endif
-            switch (opt) {
-                case GetCard:
-                	cout << "GetCard was received from player:"<<player[cur]->getName()<<endl;
-                    if (finishedDrawing) {
-                        disqualify(cur, "Cannot draw any more cards.");
-                        opt = Done;
-                    }
-                    // The player wants to pick up a card from the stock.
-                    if (isWild(stock.back())) pickedWild = true;
-                    player[cur]->take(stock.back());
-                    net[curId]++;
-                    stock.pop_back();
-                    if (stock.empty()) restock();
-                    if (contract > 0) {
-                        // Opting to draw cards to fulfill a contract.
-                        // Do not allow playing a card.
-                        fillingContract = true;
-                        if (--contract == 0) {
-                            finishedDrawing = true;
-                            #ifndef quiet
-                                cout << "Player " << player[cur]->getId() << " ("
-                                     << player[cur]->getName() << "): -- ";
-                                player[cur]->printHand();
-                                cout << endl;
-                            #endif
-                        }
-                    } else if (personalContract > 0) {
-                        // Drawing cards for next stage. No card playing allowed.
-                        if (--personalContract == 0) {
-                            finishedDrawing = true;
-                            #ifndef quiet
-                                cout << "Player " << player[cur]->getId() << " ("
-                                     << player[cur]->getName() << "): -- ";
-                                player[cur]->printHand();
-                                cout << endl;
-                            #endif
-                        }
-                    } else if (pickedWild) {
-                        // You're done if you pick a wild card when not under contract.
-                        finishedDrawing = true;
-                    }
-                    break;
-                case PlayCard:
-                	cout << "PlayCard was received from player:"<<player[cur]->getName()<<endl;
-                    // The player wants to play a card from his or her hand.
-                    if (fillingContract) {
-                        disqualify(cur, "Cannot play a card after forced draws.");
-                        opt = Done;
-                    } else if (!burning && playedCard) {
-                        disqualify(cur, "Too many cards played.");
-                        opt = Done;
-                    }
-                    c = player[cur]->playCard();
-                    #ifndef quiet
-                        cout << "Player " << player[cur]->getId() << " ("
-                             << player[cur]->getName() << "): "
-                             << c << " ";
-                        player[cur]->printHand();
-                    #endif
-                    playedCard = true;
-                    net[curId]--;
-                    if (net[curId] == 0) {
-                        personalContract = --stage[curId];
-                        finishedDrawing = false;
-                    }
-                    played[curId]++;
-                    if (isWild(c)) {
-                        contract = 0;
-                        discard.push(c);
-                        curSuit = player[cur]->setSuit();
-                        burning = false;
-                        #ifndef quiet
-                            cout << " Suit is ";
-                            Card::printSuit(curSuit, cout);
-                            cout << endl;
-                        #endif
-                    } else if (c.getSuit() == curSuit
-                      || (!burning && c.matchesRank(discard.top()))
-                      || (isDrawFive(discard.top()) && isCancel(c))) {
-                        if (contract > 0) {
-                            if (isDrawTwo(c)) {
-                                nextContract = contract + 2;
-                                contract = 0;
-                            } else if (isDrawFive(c)) {
-                                nextContract = contract + 5;
-                                contract = 0;
-                            } else if (isCancel(c)) {
-                                contract = 0;
-                            } else {
-                                disqualify(cur, "Illegal card played when under contract.");
-                            }
-                        } else {
-                            if (isDrawTwo(c)) nextContract += 2;
-                            else if (isDrawFive(c)) nextContract += 5;
-                            if (isReverser(c)) incr = -incr;
-                            if (isBurner(c)) burning = true;
-                            if (isSkipper(c)) incr += (incr > 0) ? 1 : -1;
-                        }
-                        discard.push(c);
-                        curSuit = c.getSuit();
-                        #ifndef quiet
-                            cout << endl;
-                        #endif
-                    } else {
-                        disqualify(cur, "Non-matching card played.");
-                    }
-                    if (net[cur] < 0) {
-                        disqualify(cur, "Too many cards played.");
-                    }
-                    break;
-                case Win:
-                	cout << "Win was received from player:"<<player[cur]->getName()<<endl;
-                    // The player claims that he or she has won!
-                    if (stage[curId] != 0) {
-                        disqualify(cur, "Not all stages completed.");
-                        opt = Done;
-                    } else if (net[curId] != 0) {
-                        disqualify(cur, "Player still has cards.");
-                        opt = Done;
-                    } else if (contract > 0) {
-                        disqualify(cur, "Still under contract.");
-                        opt = Done;
-                    } else if (personalContract > 0) {
-                        disqualify(cur, "Must draw replacement cards this turn.");
-                        opt = Done;
-                    } else if (!playedCard) {
-                        disqualify(cur, "Never played a card.");
-                        opt = Done;
-                    }
-                    winner = cur;
-                    burning = false;
-                    break;
-                case Done:
-                    // The player is done with his or her turn.
-                	cout << "Done was received from player:"<<player[cur]->getName()<<endl;
-                    if (contract > 0) {
-                        disqualify(cur, "Still under contract.");
-                    } else if (personalContract > 0) {
-                        disqualify(cur, "Must draw replacement cards this turn.");
-                    } else if (!playedCard && !fillingContract) {
-                    	cout << "fillingcontract:" << fillingContract;
-                        disqualify(cur, "Passing is not allowed.");
-                    }
-                    burning = false;
-                    for (int i=0; i<player.size(); i++) {
-                        if (i == cur) continue;
-                        player[i]->inform(player[cur]->getId(), stage[i], net[i]);
-                    }
-                    break;
-            }
-        }
-        nextPlayer();
-    }
+	// Principal loop: Keep playing until somebody wins.
+	while (opt != Win) {
+		contract = nextContract;
+		nextContract = 0;
+		personalContract = 0;
+		bool playedCard = false;
+		bool fillingContract = false;
+		bool pickedWild = false;
+		bool finishedDrawing = false;
+		opt = GetCard;
+		// Inner loop: handle a player's turn.
+		while (opt != Done && opt != Win) {
+#ifdef debug
+			cout << "Player " << player[cur]->getId() << ": ";
+			player[cur]->printHand();
+			cout << endl;
+			cout << " top card is " << discard.top() << endl;
+#endif
+			opt = player[cur]->ask();
+#ifdef debug
+			cout << " selected " << opt << endl;
+#endif
+			switch (opt) {
 
-    // Display interesting statistics from the game, and return the winner.
-    cout << "Player " << player[winner]->getId() << " (" << player[winner]->getName()
-         << ") wins!" << endl;
-    cout << "Cards played:\n";
-    int totCards = 0;
-    for (int i=0; i<player.size(); i++) {
-        totCards += played[player[i]->getId()];
-        cout << " Card player " << player[i]->getId() << " (" << player[i]->getName()
-             << "): " << played[player[i]->getId()] << endl;
-    }
-    cout << "Total number of cards played: " << totCards << ".\n"
-         << "Cards played by winner: " << played[player[winner]->getId()] << "\n"
-         << "Average number of cards played per player: "
-         << static_cast<double>(totCards)/player.size() << "." << endl;
-    return player[winner]->getId();
+			case GetCard:
+
+				cout << "GetCard was received from player:"<<player[cur]->getName()<<endl;
+				if (finishedDrawing) {
+					disqualify(cur, "Cannot draw any more cards.");
+					opt = Done;
+				}
+				// The player wants to pick up a card from the stock.
+				if (isWild(stock.back())) pickedWild = true;
+				player[cur]->take(stock.back());
+				net[curId]++;
+				stock.pop_back();
+				if (stock.empty()) restock();
+				if (contract > 0) {
+					// Opting to draw cards to fulfill a contract.
+					// Do not allow playing a card.
+					fillingContract = true;
+					if (--contract == 0) {
+						finishedDrawing = true;
+#ifndef quiet
+						cout << "Player " << player[cur]->getId() << " ("
+								<< player[cur]->getName() << "): -- ";
+						player[cur]->printHand();
+						cout << endl;
+#endif
+					}
+				} else if (personalContract > 0) {
+					// Drawing cards for next stage. No card playing allowed.
+					if (--personalContract == 0) {
+						finishedDrawing = true;
+#ifndef quiet
+						cout << "Player " << player[cur]->getId() << " ("
+								<< player[cur]->getName() << "): -- ";
+						player[cur]->printHand();
+						cout << endl;
+#endif
+					}
+				} else if (pickedWild) {
+					// You're done if you pick a wild card when not under contract.
+					finishedDrawing = true;
+				}
+				break;
+			case PlayCard:
+				cout << "PlayCard was received from player:"<<player[cur]->getName()<<endl;
+				// The player wants to play a card from his or her hand.
+				if (fillingContract) {
+					disqualify(cur, "Cannot play a card after forced draws.");
+					opt = Done;
+				} else if (!burning && playedCard) {
+					disqualify(cur, "Too many cards played.");
+					opt = Done;
+				}
+				c = player[cur]->playCard();
+#ifndef quiet
+				cout << "Player " << player[cur]->getId() << " ("
+						<< player[cur]->getName() << "): "
+						<< c << " ";
+				player[cur]->printHand();
+#endif
+				playedCard = true;
+				net[curId]--;
+				if (net[curId] == 0) {
+					personalContract = --stage[curId];
+					finishedDrawing = false;
+				}
+				played[curId]++;
+				if (isWild(c)) {
+					contract = 0;
+					discard.push(c);
+					curSuit = player[cur]->setSuit();
+					burning = false;
+#ifndef quiet
+					cout << " Suit is ";
+					Card::printSuit(curSuit, cout);
+					cout << endl;
+#endif
+				} else if (c.getSuit() == curSuit
+						|| (!burning && c.matchesRank(discard.top()))
+						|| (isDrawFive(discard.top()) && isCancel(c))) {
+					if (contract > 0) {
+						if (isDrawTwo(c)) {
+							nextContract = contract + 2;
+							contract = 0;
+						} else if (isDrawFive(c)) {
+							nextContract = contract + 5;
+							contract = 0;
+						} else if (isCancel(c)) {
+							contract = 0;
+						} else {
+							disqualify(cur, "Illegal card played when under contract.");
+						}
+					} else {
+						if (isDrawTwo(c)) nextContract += 2;
+						else if (isDrawFive(c)) nextContract += 5;
+						if (isReverser(c)) incr = -incr;
+						if (isBurner(c)) burning = true;
+						if (isSkipper(c)) incr += (incr > 0) ? 1 : -1;
+					}
+					discard.push(c);
+					curSuit = c.getSuit();
+#ifndef quiet
+					cout << endl;
+#endif
+				} else {
+					disqualify(cur, "Non-matching card played.");
+				}
+				if (net[cur] < 0) {
+					disqualify(cur, "Too many cards played.");
+				}
+				break;
+			case Win:
+				cout << "Win was received from player:"<<player[cur]->getName()<<endl;
+				// The player claims that he or she has won!
+				cout << "The correct stage is :" << stage[curId];
+				if (stage[curId] != 0) {
+					disqualify(cur, "Not all stages completed.");
+					opt = Done;
+				} else if (net[curId] != 0) {
+					disqualify(cur, "Player still has cards.");
+					opt = Done;
+				} else if (contract > 0) {
+					disqualify(cur, "Still under contract.");
+					opt = Done;
+				} else if (personalContract > 0) {
+					disqualify(cur, "Must draw replacement cards this turn.");
+					opt = Done;
+				} else if (!playedCard) {
+					disqualify(cur, "Never played a card.");
+					opt = Done;
+				}
+				winner = cur;
+				burning = false;
+				break;
+			case Done:
+				// The player is done with his or her turn.
+				cout << "Done was received from player:"<<player[cur]->getName()<<endl;
+				cout << "This player's stage is :" << stage[curId] <<endl;
+				if (contract > 0) {
+					disqualify(cur, "Still under contract.");
+				} else if (personalContract > 0) {
+					disqualify(cur, "Must draw replacement cards this turn.");
+				} else if (!playedCard && !fillingContract) {
+					cout << "fillingcontract:" << fillingContract;
+					disqualify(cur, "Passing is not allowed.");
+				}
+				burning = false;
+				for (int i=0; i<player.size(); i++) {
+					if (i == cur) continue;
+					player[i]->inform(player[cur]->getId(), stage[i], net[i]);
+				}
+				break;
+			}
+
+		}
+		nextPlayer();
+	}
+
+	// Display interesting statistics from the game, and return the winner.
+	cout << "Player " << player[winner]->getId() << " (" << player[winner]->getName()
+        						 << ") wins!" << endl;
+	cout << "Cards played:\n";
+	int totCards = 0;
+	for (int i=0; i<player.size(); i++) {
+		totCards += played[player[i]->getId()];
+		cout << " Card player " << player[i]->getId() << " (" << player[i]->getName()
+            						 << "): " << played[player[i]->getId()] << endl;
+	}
+	cout << "Total number of cards played: " << totCards << ".\n"
+			<< "Cards played by winner: " << played[player[winner]->getId()] << "\n"
+			<< "Average number of cards played per player: "
+			<< static_cast<double>(totCards)/player.size() << "." << endl;
+	return player[winner]->getId();
 }
 
 /*
@@ -313,29 +318,29 @@ int ShedGame::play() {
  * value of incr tells the distance to jump.
  */
 void ShedGame::nextPlayer() {
-   cout << "the current cur is:" << cur << "\n";
-   cout << "the current incr is:" << incr << "\n";
-   int sum = cur+incr;
-   cout << "player size is:" << player.size()<< "\n";
-   cout << "the sum is :" << sum <<"\n";
-   cur = sum;
-   while(cur < 0){
-	   cur += player.size();
-   }
+	cout << "the current cur is:" << cur << "\n";
+	cout << "the current incr is:" << incr << "\n";
+	int sum = cur+incr;
+	cout << "player size is:" << player.size()<< "\n";
+	cout << "the sum is :" << sum <<"\n";
+	cur = sum;
+	while(cur < 0){
+		cur += player.size();
+	}
 
-   while(cur >= player.size()){
-	   cur -= player.size();
+	while(cur >= player.size()){
+		cur -= player.size();
 
-   }
-   cout << "now the cur is:" << cur << "\n";
-   curId = player[cur]->getId();
+	}
+	cout << "now the cur is:" << cur << "\n";
+	curId = player[cur]->getId();
 
-   if(incr < 0){
-	   incr = -1;
-   }
-   else{
-	   incr = 1;
-   }
+	if(incr < 0){
+		incr = -1;
+	}
+	else{
+		incr = 1;
+	}
 
 
 
@@ -347,16 +352,16 @@ void ShedGame::nextPlayer() {
  * Remove him or her from the match.
  */
 void ShedGame::disqualify(int idx, const string& msg) {
-    Player* p = player[idx];
-    cerr << "Player " << p->getId() << " (" << p->getName()
-         << ") disqualified! " << msg << ".\n";
-    for (int i=0; i<player.size(); i++) player[i]->disqualified(p->getId());
-    p->reset();
-    delete p;
-    player.erase(player.begin() + idx);
-    net.erase(net.begin() + p->getId());
-    played.erase(played.begin() + p->getId());
-    stage.erase(stage.begin() + p->getId());
+	Player* p = player[idx];
+	cerr << "Player " << p->getId() << " (" << p->getName()
+        						 << ") disqualified! " << msg << ".\n";
+	for (int i=0; i<player.size(); i++) player[i]->disqualified(p->getId());
+	p->reset();
+	delete p;
+	player.erase(player.begin() + idx);
+	net.erase(net.begin() + p->getId());
+	played.erase(played.begin() + p->getId());
+	stage.erase(stage.begin() + p->getId());
 }
 
 /*
@@ -367,16 +372,29 @@ void ShedGame::disqualify(int idx, const string& msg) {
  * stock.
  */
 void ShedGame::restock() {
-	Card top_card = discard.top();
-	discard.pop();
+
 	bool is_empty = discard.empty();
-	while(!discard.empty()){
-		Card cur_card = discard.top();
-		discard.pop();
-		stock.push_back(cur_card);
-	}
 	if(is_empty){
-		//TODO: Create a new deck of cards
+		for (int i=0; i<1; i++) {
+			for (int r=0; r<Card::numRanks; r++) {
+				for (int s=0; s<Card::numSuits; s++) {
+					stock.push_back(Card(Card::ranks[r], Card::suits[s]));
+				}
+			}
+		}
 	}
+	else{
+		Card topCard = discard.top();
+		discard.pop();
+		while(!discard.empty()){
+			Card curCard = discard.top();
+			stock.push_back(curCard);
+			discard.pop();
+
+		}
+		discard.push(topCard);
+	}
+
+
 	random_shuffle(stock.begin(),stock.end());
 }

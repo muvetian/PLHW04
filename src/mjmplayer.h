@@ -23,7 +23,6 @@ public:
     void disqualified(int p);  // Player with id p has been disqualified.
 private:
     bool isQualified;
-    vector<int> playerStages;
     bool ifPlayed;
     int myStage;
     int cardsToDraw;

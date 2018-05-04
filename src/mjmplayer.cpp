@@ -21,27 +21,32 @@ MJMPlayer::MJMPlayer(ShedGame& g, const string& nm):Player(g,nm){
 void MJMPlayer::reset(){
 	// Issued just before dealing.
 	while (!hand.empty()) hand.pop_back();
+	isQualified = true;
+	myStage = game.handSize();
+	cardToPlay = -2;
+	cardsToDraw = 0;
+	fillingContract = false;
+	burning = false;
 }
 void MJMPlayer::prepare(){
 	// Issued just before game starts, after dealing.
 	isQualified = true;
+	myStage = game.handSize();
 
 
 }
 ShedGame::Option MJMPlayer::ask(){
 	// What do you want to do?
 	//	return ShedGame::Done; // ??? what is this for???
-	if (isQualified == false){
-		return ShedGame::Done;
-	}
 
-	if (hand.size() == 0 && myStage != 0){
-		myStage --;
+
+	if (hand.size() == 0 && myStage > 0){
+		myStage = myStage - 1;
 		cout << "["<< getName()<<":Stage "<< myStage <<"!]"<<endl;
 		cardsToDraw = myStage;
 	}
 	if(cardsToDraw > 0){
-		cardsToDraw --;
+		cardsToDraw = cardsToDraw - 1;
 		return ShedGame::GetCard;
 	}
 	else if (hand.size() == 0 && myStage == 0){
@@ -91,8 +96,12 @@ ShedGame::Option MJMPlayer::ask(){
 				}
 			}
 			else{
+//				cout << "the size of the hand right now :" << hand.size() << endl;
+//				cout << "the hand[i] right now:" << hand[i] << endl;
+//				cout << "card to play is :" << cardToPlay<<endl;
 				if(hand[i].getRank() == game.getCurRank() || hand[i].getSuit() == game.getCurSuit()){
 					//				cout << "PLAYER:"<< getName()<<" ";
+					cout << "I am here!" << endl;
 					cardToPlay = i;
 					if(game.isBurner(hand[i])){
 						burner = hand[i];
@@ -128,16 +137,7 @@ ShedGame::Option MJMPlayer::ask(){
 			return ShedGame::GetCard;
 		}
 
-		//		if (!burning){
-		//			cout << "No card to play for player:"<<getName()<<"\n";
-		//			return ShedGame::GetCard;
-		//		}
-		//		else{
-		//			cout <<"its buring so player is fine:"<<getName()<<"\n";
-		//			burning = false;
-		//
-		//			return ShedGame::Done;
-		//		}
+
 
 
 	}
@@ -190,7 +190,7 @@ Card::Suit MJMPlayer::setSuit(){
 	// Issued after playing a wild card.
 }
 void MJMPlayer::updatePlayerStages(int p, int s){
-	playerStages[p] = s;
+
 }
 Card MJMPlayer::playCard(){
 	//	cout << "This is player:" << getName()<<"\n";
