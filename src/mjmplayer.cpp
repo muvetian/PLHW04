@@ -36,6 +36,7 @@ ShedGame::Option MJMPlayer::ask(){
 
 	if (hand.size() == 0 && myStage != 0){
 		myStage --;
+		cout << "["<< getName()<<":Stage "<< myStage <<"!]"<<endl;
 		cardsToDraw = myStage;
 	}
 	if(cardsToDraw > 0){
@@ -85,14 +86,22 @@ ShedGame::Option MJMPlayer::ask(){
 				if(game.isBurner(hand[i])){
 					burning = true;
 				}
-//				cout <<"card is:" <<hand[i];
-//				cout << "Found the matching card !!!"<< endl;
+
+
 				ifPlayed = true;
 				return ShedGame::PlayCard;
 
 
 			}
+			else if (game.isWild(hand[i])){
+				cardToPlay = i;
+				ifPlayed = true;
+				return ShedGame::PlayCard;
+			}
 		}
+		cout << "Do not have card to play" <<endl;
+		printHand();
+
 		return ShedGame::GetCard;
 //		if (!burning){
 //			cout << "No card to play for player:"<<getName()<<"\n";

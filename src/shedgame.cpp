@@ -137,7 +137,7 @@ int ShedGame::play() {
             #endif
             switch (opt) {
                 case GetCard:
-                	cout << "GetCard was received from player:"<<player[cur]->getName()<<"\n";
+                	cout << "GetCard was received from player:"<<player[cur]->getName()<<endl;
                     if (finishedDrawing) {
                         disqualify(cur, "Cannot draw any more cards.");
                         opt = Done;
@@ -178,7 +178,7 @@ int ShedGame::play() {
                     }
                     break;
                 case PlayCard:
-                	cout << "PlayCard was received from player:"<<player[cur]->getName()<<"\n";
+                	cout << "PlayCard was received from player:"<<player[cur]->getName()<<endl;
                     // The player wants to play a card from his or her hand.
                     if (fillingContract) {
                         disqualify(cur, "Cannot play a card after forced draws.");
@@ -246,7 +246,7 @@ int ShedGame::play() {
                     }
                     break;
                 case Win:
-                	cout << "Win was received from player:"<<player[cur]->getName()<<"\n";
+                	cout << "Win was received from player:"<<player[cur]->getName()<<endl;
                     // The player claims that he or she has won!
                     if (stage[curId] != 0) {
                         disqualify(cur, "Not all stages completed.");
@@ -269,7 +269,7 @@ int ShedGame::play() {
                     break;
                 case Done:
                     // The player is done with his or her turn.
-                	cout << "Done was received from player:"<<player[cur]->getName()<<"\n";
+                	cout << "Done was received from player:"<<player[cur]->getName()<<endl;
                     if (contract > 0) {
                         disqualify(cur, "Still under contract.");
                     } else if (personalContract > 0) {
@@ -320,14 +320,14 @@ void ShedGame::nextPlayer() {
    cout << "the sum is :" << sum <<"\n";
    cur = sum;
    while(cur < 0){
-	   cur = cur + player.size();
+	   cur += player.size();
    }
 
    while(cur >= player.size()){
-	   cur = cur - player.size();
+	   cur -= player.size();
 
    }
-   cout << "now the cur is:" << sum%(player.size()) << "\n";
+   cout << "now the cur is:" << cur << "\n";
    curId = player[cur]->getId();
 
    if(incr < 0){
