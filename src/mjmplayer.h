@@ -30,6 +30,7 @@ private:
     int cardToPlay;
     bool fillingContract;
     bool burning;
+    Card burner;
 };
 
 
