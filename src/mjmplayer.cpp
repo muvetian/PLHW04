@@ -32,7 +32,7 @@ void MJMPlayer::prepare(){
 	cardsToDraw = 0;
 	fillingContract = false;
 	burning = false;
-	firstFill = false;
+	firstFill = true;
 
 
 }
@@ -40,7 +40,7 @@ ShedGame::Option MJMPlayer::ask(){
 	// What do you want to do?
 	//	return ShedGame::Done; // ??? what is this for???
 	cout << "THe contract on me is:" << game.getContract()<< endl;
-
+	cout << "The first fille for me is:" << firstFill << endl;
 	if (hand.size() == 0 && myStage > 0){
 		myStage = myStage - 1;
 		cout << "["<< getName()<<":Stage "<< myStage <<"!]"<<endl;
@@ -60,44 +60,52 @@ ShedGame::Option MJMPlayer::ask(){
 		return ShedGame::Done;
 	}
 	if(game.getContract() > 0 && cardsToDraw == 0){
-		//		if(firstFill){
-		//
-		//			firstFill = false;
-		//			bool have_cancel = false;
-		//			for(int i = 0; i < hand.size();i++){
-		//				if(game.isCancel(hand[i])){
-		//					cardToPlay = i;
-		//					have_cancel = true;
-		//					ifPlayed = true;
-		//					fillingContract =false;
-		//					return ShedGame::PlayCard;
-		//				}
-		//
-		//			}
-		//			if(!have_cancel){
-		//
-		//				for(int i = 0; i < hand.size();i++){
-		//					if(game.isDrawFive(hand[i]) || game.isDrawTwo(hand[i])){ // brutal evil play who always prioritize drawFive
-		//						cout << "PLAYER:"<< getId();
-		//						cardToPlay = i;
-		//						ifPlayed = true;
-		//						fillingContract =false;
-		//						return ShedGame::PlayCard;
-		//					}
-		//				}
-		//
-		//			}
-		//			cout << "no draw or cancel, drawing now.";
-		//			fillingContract = true;
-		//			return ShedGame::GetCard;
-		//
-		//		}
-		//		else{
-		cout << "not the first time filling contract";
-		fillingContract = true;
-		return ShedGame::GetCard;
-		//		}
+		Card currentCard = Card(game.getCurRank(), game.getCurSuit());
+		if(firstFill){
+			firstFill = false;
+			bool have_cancel = false;
+			for(int i = 0; i < hand.size();i++){
+				if(game.isCancel(hand[i])){
+					if(game.isDrawFive(currentCard)){
+						cardToPlay = i;
+						have_cancel = true;
+						ifPlayed = true;
+						cout << "Canceld contract using cancel" << endl;
+						return ShedGame::PlayCard;
+					}
 
+				}
+
+			}
+			if(!have_cancel){
+
+				for(int i = 0; i < hand.size();i++){
+					if(game.isDrawFive(currentCard) && game.isDrawFive(hand[i])){
+						cardToPlay = i;
+						ifPlayed = true;
+						cout << "Canceld contract using draw 5" << endl;
+						return ShedGame::PlayCard;
+					}
+					if(game.isDrawTwo(currentCard) && game.isDrawTwo(hand[i])){ // brutal evil play who always prioritize drawFive
+						cardToPlay = i;
+						ifPlayed = true;
+						cout << "Canceld contract using draw 2" << endl;
+						return ShedGame::PlayCard;
+					}
+				}
+
+			}
+			cout << "no draw or cancel, drawing now.";
+			fillingContract = true;
+			return ShedGame::GetCard;
+
+		}
+		else{
+			cout << "not the first time filling contract";
+			fillingContract = true;
+			firstFill = false;
+			return ShedGame::GetCard;
+		}
 
 
 
@@ -164,6 +172,7 @@ ShedGame::Option MJMPlayer::ask(){
 			return ShedGame::Done;
 		}
 		else{
+
 			return ShedGame::GetCard;
 		}
 
