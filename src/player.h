@@ -29,7 +29,6 @@ class Player {
     virtual Card playCard() = 0;           // What card do you want to play?
     virtual void inform(int p, int s, int t) = 0; // Player with id p is in stage s and has t cards.
     virtual void disqualified(int p) = 0;  // Player with id p has been disqualified.
-    virtual void updatePlayerStages(int p, int s)=0;
     // Virtual function with a default implementation.
     virtual void restocked() {}
 

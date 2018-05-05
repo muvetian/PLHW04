@@ -138,8 +138,6 @@ int ShedGame::play() {
 			switch (opt) {
 
 			case GetCard:
-
-				cout << "GetCard was received from player:"<<player[cur]->getName()<<endl;
 				if (finishedDrawing) {
 					disqualify(cur, "Cannot draw any more cards.");
 					opt = Done;
@@ -182,7 +180,6 @@ int ShedGame::play() {
 
 				break;
 			case PlayCard:
-				cout << "PlayCard was received from player:"<<player[cur]->getName()<<endl;
 				// The player wants to play a card from his or her hand.
 				if (fillingContract) {
 					disqualify(cur, "Cannot play a card after forced draws.");
@@ -250,7 +247,6 @@ int ShedGame::play() {
 				}
 				break;
 			case Win:
-				cout << "Win was received from player:"<<player[cur]->getName()<<endl;
 				// The player claims that he or she has won!
 				if (stage[curId] != 0) {
 					disqualify(cur, "Not all stages completed.");
@@ -273,13 +269,11 @@ int ShedGame::play() {
 				break;
 			case Done:
 				// The player is done with his or her turn.
-				cout << "Done was received from player:"<<player[cur]->getName()<<endl;
 				if (contract > 0) {
 					disqualify(cur, "Still under contract.");
 				} else if (personalContract > 0) {
 					disqualify(cur, "Must draw replacement cards this turn.");
 				} else if (!playedCard && !fillingContract) {
-					cout << "fillingcontract:" << fillingContract;
 					disqualify(cur, "Passing is not allowed.");
 				}
 				burning = false;
@@ -321,11 +315,7 @@ int ShedGame::play() {
  * value of incr tells the distance to jump.
  */
 void ShedGame::nextPlayer() {
-	cout << "the current cur is:" << cur << "\n";
-	cout << "the current incr is:" << incr << "\n";
 	int sum = cur+incr;
-	cout << "player size is:" << player.size()<< "\n";
-	cout << "the sum is :" << sum <<"\n";
 	cur = sum;
 	while(cur < 0){
 		cur += player.size();
@@ -335,7 +325,6 @@ void ShedGame::nextPlayer() {
 		cur -= player.size();
 
 	}
-	cout << "now the cur is:" << cur << "\n";
 	curId = player[cur]->getId();
 
 	if(incr < 0){

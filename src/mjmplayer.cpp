@@ -16,9 +16,16 @@ MJMPlayer::MJMPlayer(ShedGame& g, const string& nm):Player(g,nm){
 	fillingContract = false;
 	burning = false;
 	firstFill = false;
+	isRestocked = false;
+	for(int i = 0; i < game.numPlayers();i++){
+		playerStages.push_back(0);
 
+	}
 }
 
+void MJMPlayer::restocked(){
+	isRestocked = true;
+}
 void MJMPlayer::reset(){
 	// Issued just before dealing.
 	while (!hand.empty()) hand.pop_back();
@@ -37,10 +44,6 @@ void MJMPlayer::prepare(){
 
 }
 ShedGame::Option MJMPlayer::ask(){
-	// What do you want to do?
-	//	return ShedGame::Done; // ??? what is this for???
-	cout << "THe contract on me is:" << game.getContract()<< endl;
-	cout << "The first fille for me is:" << firstFill << endl;
 	if (hand.size() == 0 && myStage > 0){
 		myStage = myStage - 1;
 		cout << "["<< getName()<<":Stage "<< myStage <<"!]"<<endl;
@@ -54,7 +57,6 @@ ShedGame::Option MJMPlayer::ask(){
 		return ShedGame::Win;
 	}
 	else if(ifPlayed == true && !burning){
-		cout << "Played and not burning";
 		ifPlayed = false;
 		firstFill = true;
 		return ShedGame::Done;
@@ -70,7 +72,6 @@ ShedGame::Option MJMPlayer::ask(){
 						cardToPlay = i;
 						have_cancel = true;
 						ifPlayed = true;
-						cout << "Canceld contract using cancel" << endl;
 						return ShedGame::PlayCard;
 					}
 
@@ -83,25 +84,21 @@ ShedGame::Option MJMPlayer::ask(){
 					if(game.isDrawFive(currentCard) && game.isDrawFive(hand[i])){
 						cardToPlay = i;
 						ifPlayed = true;
-						cout << "Canceld contract using draw 5" << endl;
 						return ShedGame::PlayCard;
 					}
 					if(game.isDrawTwo(currentCard) && game.isDrawTwo(hand[i])){ // brutal evil play who always prioritize drawFive
 						cardToPlay = i;
 						ifPlayed = true;
-						cout << "Canceld contract using draw 2" << endl;
 						return ShedGame::PlayCard;
 					}
 				}
 
 			}
-			cout << "no draw or cancel, drawing now.";
 			fillingContract = true;
 			return ShedGame::GetCard;
 
 		}
 		else{
-			cout << "not the first time filling contract";
 			fillingContract = true;
 			firstFill = false;
 			return ShedGame::GetCard;
@@ -125,7 +122,6 @@ ShedGame::Option MJMPlayer::ask(){
 					cardToPlay = i;
 					ifPlayed = true;
 					burning = false;
-					cout << "burning finished because of wild card"<<endl;
 					return ShedGame::PlayCard;
 				}
 				else if(hand[i].getSuit() == burner.getSuit()){
@@ -136,12 +132,7 @@ ShedGame::Option MJMPlayer::ask(){
 
 			}
 			else{
-				//				cout << "the size of the hand right now :" << hand.size() << endl;
-				//				cout << "the hand[i] right now:" << hand[i] << endl;
-				//				cout << "card to play is :" << cardToPlay<<endl;
 				if(hand[i].getRank() == game.getCurRank() || hand[i].getSuit() == game.getCurSuit()){
-					//				cout << "PLAYER:"<< getName()<<" ";
-					cout << "I am here!" << endl;
 					cardToPlay = i;
 					if(game.isBurner(hand[i])){
 						burner = hand[i];
@@ -161,13 +152,9 @@ ShedGame::Option MJMPlayer::ask(){
 				}
 			}
 		}
-
-		cout << "Do not have card to play" <<endl;
-		printHand();
 		if(burning){
 			burning = false;
 			ifPlayed = false;
-			cout << "burning finished"<<endl;
 			firstFill = true;
 			return ShedGame::Done;
 		}
@@ -229,40 +216,18 @@ Card::Suit MJMPlayer::setSuit(){
 
 	// Issued after playing a wild card.
 }
-void MJMPlayer::updatePlayerStages(int p, int s){
 
-}
 Card MJMPlayer::playCard(){
-	//	cout << "This is player:" << getName()<<"\n";
-	//	cout << "Card to Play Index:" << cardToPlay;
-	//	cout << "Card to play:" << hand[cardToPlay];
-	//	hand.erase(hand.begin() + cardToPlay);
-	//	return hand[cardToPlay]; // This will never happen, hand[0] is used as a placeholder
-	//	for(int i = 0; i < hand.size(); i++){
-	//		if(hand[i].getRank() == game.getCurRank() || hand[i].getSuit() == game.getCurSuit()){
-	//
-	//			Card cardToReturn = hand[i];
-	//			hand.erase(hand.begin() + i);
-	//			return cardToReturn;
-	//
-	//
-	//		}
-	//	}
 
 	Card cardToReturn = hand[cardToPlay];
 	hand.erase(hand.begin()+cardToPlay);
 	return cardToReturn;
-
-	// What card do you want to play?
 }
 void MJMPlayer::inform(int p, int s, int t){
-	// Player with id p is in stage s and has t cards.
-	//	ShedGame::net[p] = t; // set the current size of the hand for this player
-	//	game.stage[p] = s; // set the current stage for this player
-	//	game.getPlayer(p)->updatePlayerStages(getId(), s);
+	cout << "The Player "<< p << " is at Stage "<< s<<" and has " << t <<" cards."<<endl;
+
 }
 void MJMPlayer::disqualified(int p){
-	// Player with id p has been disqualified.
 	if (getId() == p){
 		isQualified = false;
 	}
