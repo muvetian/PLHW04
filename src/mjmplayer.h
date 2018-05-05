@@ -30,6 +30,7 @@ private:
     bool fillingContract;
     bool burning;
     Card burner;
+    bool firstFill;
 };
 
 

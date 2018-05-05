@@ -150,6 +150,7 @@ int ShedGame::play() {
 				net[curId]++;
 				stock.pop_back();
 				if (stock.empty()) restock();
+
 				if (contract > 0) {
 					// Opting to draw cards to fulfill a contract.
 					// Do not allow playing a card.
@@ -178,6 +179,7 @@ int ShedGame::play() {
 					// You're done if you pick a wild card when not under contract.
 					finishedDrawing = true;
 				}
+
 				break;
 			case PlayCard:
 				cout << "PlayCard was received from player:"<<player[cur]->getName()<<endl;
@@ -250,7 +252,6 @@ int ShedGame::play() {
 			case Win:
 				cout << "Win was received from player:"<<player[cur]->getName()<<endl;
 				// The player claims that he or she has won!
-				cout << "The correct stage is :" << stage[curId];
 				if (stage[curId] != 0) {
 					disqualify(cur, "Not all stages completed.");
 					opt = Done;
@@ -273,7 +274,6 @@ int ShedGame::play() {
 			case Done:
 				// The player is done with his or her turn.
 				cout << "Done was received from player:"<<player[cur]->getName()<<endl;
-				cout << "This player's stage is :" << stage[curId] <<endl;
 				if (contract > 0) {
 					disqualify(cur, "Still under contract.");
 				} else if (personalContract > 0) {
@@ -290,8 +290,11 @@ int ShedGame::play() {
 				break;
 			}
 
+
 		}
+
 		nextPlayer();
+
 	}
 
 	// Display interesting statistics from the game, and return the winner.
@@ -384,6 +387,7 @@ void ShedGame::restock() {
 		}
 	}
 	else{
+
 		Card topCard = discard.top();
 		discard.pop();
 		while(!discard.empty()){
@@ -394,6 +398,7 @@ void ShedGame::restock() {
 		}
 		discard.push(topCard);
 	}
+
 
 
 	random_shuffle(stock.begin(),stock.end());

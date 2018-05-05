@@ -8,7 +8,6 @@ CPP_SRCS += \
 ../src/card.cpp \
 ../src/crazy8.cpp \
 ../src/mjmplayer.cpp \
-../src/niceplayer.cpp \
 ../src/play.cpp \
 ../src/player.cpp \
 ../src/shedgame.cpp \
@@ -19,7 +18,6 @@ OBJS += \
 ./src/card.o \
 ./src/crazy8.o \
 ./src/mjmplayer.o \
-./src/niceplayer.o \
 ./src/play.o \
 ./src/player.o \
 ./src/shedgame.o \
@@ -30,7 +28,6 @@ CPP_DEPS += \
 ./src/card.d \
 ./src/crazy8.d \
 ./src/mjmplayer.d \
-./src/niceplayer.d \
 ./src/play.d \
 ./src/player.d \
 ./src/shedgame.d \

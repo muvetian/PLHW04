@@ -15,30 +15,31 @@ MJMPlayer::MJMPlayer(ShedGame& g, const string& nm):Player(g,nm){
 	cardsToDraw = 0;
 	fillingContract = false;
 	burning = false;
+	firstFill = false;
 
 }
 
 void MJMPlayer::reset(){
 	// Issued just before dealing.
 	while (!hand.empty()) hand.pop_back();
-	isQualified = true;
-	myStage = game.handSize();
-	cardToPlay = -2;
-	cardsToDraw = 0;
-	fillingContract = false;
-	burning = false;
 }
 void MJMPlayer::prepare(){
 	// Issued just before game starts, after dealing.
 	isQualified = true;
+	cardToPlay = -2;
+	ifPlayed = false;
 	myStage = game.handSize();
+	cardsToDraw = 0;
+	fillingContract = false;
+	burning = false;
+	firstFill = false;
 
 
 }
 ShedGame::Option MJMPlayer::ask(){
 	// What do you want to do?
 	//	return ShedGame::Done; // ??? what is this for???
-
+	cout << "THe contract on me is:" << game.getContract()<< endl;
 
 	if (hand.size() == 0 && myStage > 0){
 		myStage = myStage - 1;
@@ -55,50 +56,81 @@ ShedGame::Option MJMPlayer::ask(){
 	else if(ifPlayed == true && !burning){
 		cout << "Played and not burning";
 		ifPlayed = false;
+		firstFill = true;
 		return ShedGame::Done;
 	}
-	if(game.getContract() > 0){
-		fillingContract = true;
-		//		bool have_cancel = false;
-		//		for(int i = 0; i < hand.size();i++){
-		//			if(game.isCancel(hand[i])){
-		//				cout << "callA";
-		//				cardToPlay = i;
-		//				have_cancel = true;
-		//				ifPlayed = true;
-		//				return ShedGame::PlayCard;
-		//			}
+	if(game.getContract() > 0 && cardsToDraw == 0){
+		//		if(firstFill){
 		//
-		//		}
-		//		if(!have_cancel){
+		//			firstFill = false;
+		//			bool have_cancel = false;
 		//			for(int i = 0; i < hand.size();i++){
-		//				if(game.isDrawFive(hand[i]) || game.isDrawTwo(hand[i])){ // brutal evil play who always prioritize drawFive
-		//					cout << "PLAYER:"<< getId();
-		//
+		//				if(game.isCancel(hand[i])){
 		//					cardToPlay = i;
-		//					cout << "callB";
+		//					have_cancel = true;
 		//					ifPlayed = true;
+		//					fillingContract =false;
 		//					return ShedGame::PlayCard;
 		//				}
+		//
 		//			}
-		cout << "no draw or cancel, drawing now.";
+		//			if(!have_cancel){
+		//
+		//				for(int i = 0; i < hand.size();i++){
+		//					if(game.isDrawFive(hand[i]) || game.isDrawTwo(hand[i])){ // brutal evil play who always prioritize drawFive
+		//						cout << "PLAYER:"<< getId();
+		//						cardToPlay = i;
+		//						ifPlayed = true;
+		//						fillingContract =false;
+		//						return ShedGame::PlayCard;
+		//					}
+		//				}
+		//
+		//			}
+		//			cout << "no draw or cancel, drawing now.";
+		//			fillingContract = true;
+		//			return ShedGame::GetCard;
+		//
+		//		}
+		//		else{
+		cout << "not the first time filling contract";
+		fillingContract = true;
 		return ShedGame::GetCard;
 		//		}
+
+
+
+
+
+
+
+
+
+
+
 	}
 	else if(fillingContract == false){ // if you do not have a contract
 		for(int i = 0; i < hand.size(); i++){
 
 			if(burning){
-				if(hand[i].getSuit() == burner.getSuit()){
+				if (game.isWild(hand[i])){
+					cardToPlay = i;
+					ifPlayed = true;
+					burning = false;
+					cout << "burning finished because of wild card"<<endl;
+					return ShedGame::PlayCard;
+				}
+				else if(hand[i].getSuit() == burner.getSuit()){
 					cardToPlay = i;
 					ifPlayed = true;
 					return ShedGame::PlayCard;
 				}
+
 			}
 			else{
-//				cout << "the size of the hand right now :" << hand.size() << endl;
-//				cout << "the hand[i] right now:" << hand[i] << endl;
-//				cout << "card to play is :" << cardToPlay<<endl;
+				//				cout << "the size of the hand right now :" << hand.size() << endl;
+				//				cout << "the hand[i] right now:" << hand[i] << endl;
+				//				cout << "card to play is :" << cardToPlay<<endl;
 				if(hand[i].getRank() == game.getCurRank() || hand[i].getSuit() == game.getCurSuit()){
 					//				cout << "PLAYER:"<< getName()<<" ";
 					cout << "I am here!" << endl;
@@ -117,20 +149,18 @@ ShedGame::Option MJMPlayer::ask(){
 				else if (game.isWild(hand[i])){
 					cardToPlay = i;
 					ifPlayed = true;
-					burning = false;
-					cout << "burning finished"<<endl;
 					return ShedGame::PlayCard;
 				}
 			}
 		}
 
 		cout << "Do not have card to play" <<endl;
-		ifPlayed= false;
 		printHand();
 		if(burning){
 			burning = false;
-
+			ifPlayed = false;
 			cout << "burning finished"<<endl;
+			firstFill = true;
 			return ShedGame::Done;
 		}
 		else{
@@ -142,6 +172,7 @@ ShedGame::Option MJMPlayer::ask(){
 
 	}
 	fillingContract = false;
+	firstFill = true;
 	return ShedGame::Done;
 }
 void MJMPlayer::take(const Card& c){

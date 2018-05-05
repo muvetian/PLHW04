@@ -9,7 +9,6 @@
 #include <string>
 #include "player.h"
 #include "mjmplayer.h"
-#include "niceplayer.h"
 #include "crazy8.h"
 #include "switch.h"
 #include "blackjack.h"
@@ -59,9 +58,6 @@ void play(ShedGame& g, int M, int N) {
                 // A player that I wrote (code not available!).
                 g.addPlayer(new MJMPlayer(g, name));
                 break;
-            case 2:
-            	g.addPlayer(new NicePlayer(g, name));
-            	break;
             default:
                 throw logic_error("Error: invalid choice received");
                 break;
